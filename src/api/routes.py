@@ -21,26 +21,26 @@ def handle_hello():
 
 @api.route("/signup", methods=['POST'])
 def signup():
-    body= request.get_json()
+    body = request.json.get()
     user = User.query.filter_by(email=body['email']).first()
 
     if not user:
         new_user = User(email=body['email'], password=body['password'], is_active=True)
         db.session.add(new_user)
         db.session.commit()
-        expira =  datetime.timedelta(minutes=1)
-        new_token = create_access_token(identity=new_user.email,expires_delta=expira)
+        expire =  datetime.timedelta(minutes=1)
+        new_token = create_access_token(identity=new_user.email,expires_delta=expire)
         return jsonify({
                 "msg":"User was created",
                 "token":new_token,
-                "exp":expira.total_seconds()
+                "exp":expire.total_seconds()
             })
     else:
         return jsonify({"msg":"The email entered already has an associated account."})
 
 @api.route("/login", methods=['POST'])
 def login():
-    body= request.get_json()
+    body = request.json.get()
     user = User.query.filter_by(email=body['email']).first()
     if user:
         if user.password == body["password"]:
