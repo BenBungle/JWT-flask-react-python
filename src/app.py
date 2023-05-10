@@ -13,6 +13,7 @@ from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import datetime
+
 #from models import Person
 
 ENV = os.getenv("FLASK_ENV")
@@ -72,4 +73,9 @@ if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
 
-
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin',"*")
+    response.headers.add('Access-Control-Allow-Headers','Content-type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GEt,PUT,POST,DELETE,OPTIONS')
+    return response

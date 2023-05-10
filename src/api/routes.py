@@ -7,21 +7,22 @@ from api.utils import generate_sitemap, APIException
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import datetime
 
+
 api = Blueprint('api', __name__)
 
 
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
+#@api.route('/hello', methods=['POST', 'GET'])
+#def handle_hello():
 
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
+    #response_body = {
+    #    "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
+    #}
 
-    return jsonify(response_body), 200
+    #return jsonify(response_body), 200
 
 @api.route("/signup", methods=['POST'])
 def signup():
-    body = request.json.get()
+    body = request.get_json()
     user = User.query.filter_by(email=body['email']).first()
 
     if not user:
@@ -36,11 +37,11 @@ def signup():
                 "exp":expire.total_seconds()
             })
     else:
-        return jsonify({"msg":"The email entered already has an associated account."})
+        return jsonify({"msg":"The email entered already has an associated account. Please Log in"})
 
 @api.route("/login", methods=['POST'])
 def login():
-    body = request.json.get()
+    body = request.get_json()
     user = User.query.filter_by(email=body['email']).first()
     if user:
         if user.password == body["password"]:
@@ -61,13 +62,17 @@ def login():
             "msg": "Wrong email or password. Please try again."
         }), 401
 
-
+@api.route('/private')
+@jwt_required
+def private_route():
+    current_user = get_jwt_identity()
+    return f"Hello, {current_user}! This is a private API route."
 
 @api.route("/check", methods=['GET'])
 @jwt_required()
 def check_user():
-    identidad = get_jwt_identity()
+    current_user = get_jwt_identity()
     return jsonify({
         "logeado":True,
-        "identidad":identidad
+        "identidad":current_user
     })

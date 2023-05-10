@@ -1,45 +1,62 @@
-import React, { useContext, useState } from "react";
-import { Context } from "../store/appContext";
-import rigoImageUrl from "../../img/rigo-baby.jpg";
-import "../../styles/home.css";
+import React, { useState } from "react";
 
 export const Login = () => {
-	const { store, actions } = useContext(Context);
-	const [email, setEmail] = useState("")
-	const [password, setPassword] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState(null);
 
-	const handleClick = () => {
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
+  };
 
-		const options = {
-			method: ['POST'],
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				"email": email,
-				"password": password
-			})
-		}
-		fetch('https://benbungle-laughing-disco-w6g4q49x5wrhg49v-3000.preview.app.github.dev/api/login', options)
-		.then(resp => {
-			if (resp.status === 200) return resp.json();
-			else alert("There is an error");
-		})
-		.then()
-		.catch(error => {
-			console.error('there was an error',error)
-		})
-	}
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+  };
 
-	return (
-		<div className="text-center mt-5">
-			<h1>Login</h1>
-			<div>
-				<input type="text" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)}/>
-				<input type="password" placeholder="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
-				<button onClick={handleClick}>Login</button>
-			</div>
-			
-		</div>
-	);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    fetch("https://benbungle-laughing-disco-w6g4q49x5wrhg49v-3001.preview.app.github.dev/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("Authentication failed");
+        }
+      })
+      .then((data) => {
+        sessionStorage.setItem("token", data.token);
+        setLoginError(null);
+        // redirect to /private
+        window.location.href = "/private";
+      })
+      .catch((error) => {
+        setLoginError(error.message);
+      });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        Email:
+        <input type="email" value={email} onChange={handleEmailChange} />
+      </label>
+      <label>
+        Password:
+        <input
+          type="password"
+          value={password}
+          onChange={handlePasswordChange}
+        />
+      </label>
+      <button type="submit">Log in</button>
+      {loginError && <p>{loginError}</p>}
+    </form>
+  );
 };
